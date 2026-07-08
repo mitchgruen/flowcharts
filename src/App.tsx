@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import mermaid from 'mermaid'
-import testChart from './test.mmd?raw'
 
 mermaid.initialize({ startOnLoad: false, theme: 'default' })
 
@@ -8,10 +7,15 @@ function App() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const id = `chart-${crypto.randomUUID()}`
-    mermaid.render(id, testChart).then(({ svg }) => {
-      if (ref.current) ref.current.innerHTML = svg
-    })
+    fetch('/api/charts/test.mmd')
+      .then((res) => res.text())
+      .then((testChart) => {
+        const id = `chart-${crypto.randomUUID()}`
+        return mermaid.render(id, testChart)
+      })
+      .then(({ svg }) => {
+        if (ref.current) ref.current.innerHTML = svg
+      })
   }, [])
 
   return (
