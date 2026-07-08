@@ -12,13 +12,32 @@ function currentHashFilename() {
   return decodeURIComponent(window.location.hash.slice(1)) || null;
 }
 
+// Shared node-styling classes, injected into every flowchart so individual
+// .mmd files only need to assign nodes to a class (e.g. `class A,N terminalNode`)
+// instead of repeating this classDef boilerplate in each file.
+const FLOWCHART_CLASS_DEFS = `
+classDef processNode fill:#eef2ff,stroke:#818cf8,color:#1e1b4b
+classDef decisionNode fill:#fff7ed,stroke:#fb923c,color:#1e1b4b
+classDef terminalNode fill:#f0fdf4,stroke:#4ade80,color:#1e1b4b
+classDef reviewNode fill:#fef2f2,stroke:#f87171,color:#1e1b4b
+`;
+
+function withClassDefs(code: string) {
+  // classDef/class syntax is flowchart-specific and would fail to parse on
+  // other diagram types (e.g. sequenceDiagram), so only inject it there.
+  const isFlowchart = /^\s*(flowchart|graph)\b/.test(code);
+  return isFlowchart ? code + FLOWCHART_CLASS_DEFS : code;
+}
+
 function ChartView({ filename }: { filename: string }) {
   const [svg, setSvg] = useState("");
 
   useEffect(() => {
     fetch(`/api/charts/${encodeURIComponent(filename)}`)
       .then((res) => res.text())
-      .then((code) => mermaid.render(`chart-${crypto.randomUUID()}`, code))
+      .then((code) =>
+        mermaid.render(`chart-${crypto.randomUUID()}`, withClassDefs(code)),
+      )
       .then((result) => setSvg(result.svg));
   }, [filename]);
 
