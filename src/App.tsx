@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import mermaid from "mermaid";
+import { FreeZoom } from "./FreeZoom";
 
 mermaid.initialize({ startOnLoad: false, theme: "default" });
 
@@ -21,7 +22,11 @@ function ChartView({ filename }: { filename: string }) {
       .then((result) => setSvg(result.svg));
   }, [filename]);
 
-  return <div dangerouslySetInnerHTML={{ __html: svg }} />;
+  return (
+    <FreeZoom initialScale={0.8}>
+      <div dangerouslySetInnerHTML={{ __html: svg }} />
+    </FreeZoom>
+  );
 }
 
 function App() {
@@ -50,15 +55,11 @@ function App() {
 
   if (selected) {
     return (
-      <main
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-        }}
-      >
-        <a href="#" style={{ position: "fixed", top: 16, left: 16 }}>
+      <main>
+        <a
+          href="#"
+          style={{ position: "fixed", top: 16, left: 16, zIndex: 10 }}
+        >
           &larr; Back
         </a>
         <ChartView key={selected} filename={selected} />
