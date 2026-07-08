@@ -1,10 +1,12 @@
 # Flowcharts
 
-Renders Mermaid (`.mmd`) charts from a local folder in the browser. It's a fully static app — no backend, no env vars — you connect it to a folder on your machine directly via the browser's File System Access API, so it works the same whether you're running it locally or from a public deployment.
+**Live at: https://mitchgruen.github.io/flowcharts/**
+
+Renders Mermaid (`.mmd`) charts from a local folder in the browser. It's a fully static app — no backend, no env vars — you connect it to a folder on your machine directly via the browser's File System Access API.
 
 Chromium-based browsers only (Chrome, Edge) — Safari and Firefox don't support the File System Access API.
 
-## Setup
+## Local development
 
 1. `pnpm install`
 2. `pnpm dev`
