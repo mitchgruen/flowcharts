@@ -1,15 +1,18 @@
 # Flowcharts
 
-Renders Mermaid (`.mmd`) charts from a local directory in the browser.
+Renders Mermaid (`.mmd`) charts from a local folder in the browser. It's a fully static app — no backend, no env vars — you connect it to a folder on your machine directly via the browser's File System Access API, so it works the same whether you're running it locally or from a public deployment.
+
+Chromium-based browsers only (Chrome, Edge) — Safari and Firefox don't support the File System Access API.
 
 ## Setup
 
 1. `pnpm install`
-2. Create `.env.local` and point it at your charts directory:
-   ```
-   VITE_CHARTS_DIR=/absolute/path/to/charts
-   ```
-3. `pnpm dev`
+2. `pnpm dev`
+3. Click "Connect charts folder" and pick the folder containing your `.mmd` files.
+
+The connected folder is remembered (via IndexedDB) across reloads when the browser's permission grant is still active. If it's expired, just click "Connect charts folder" again and re-pick the same folder.
+
+Edits to a `.mmd` file while it's open show up automatically within a second or two (polled, since the browser has no native file-change notification for this yet).
 
 ## Node styling
 

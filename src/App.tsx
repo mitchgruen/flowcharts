@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import mermaid from "mermaid";
 import { FreeZoom } from "./FreeZoom";
+import { useLocalCharts } from "./useLocalCharts";
+import { useLocalFile } from "./useLocalFile";
 
 mermaid.initialize({ startOnLoad: false, theme: "default" });
 
@@ -29,17 +31,22 @@ function withClassDefs(code: string) {
   return isFlowchart ? code + FLOWCHART_CLASS_DEFS : code;
 }
 
-function ChartView({ filename }: { filename: string }) {
+function ChartView({
+  dirHandle,
+  filename,
+}: {
+  dirHandle: FileSystemDirectoryHandle;
+  filename: string;
+}) {
+  const code = useLocalFile(dirHandle, filename);
   const [svg, setSvg] = useState("");
 
   useEffect(() => {
-    fetch(`/api/charts/${encodeURIComponent(filename)}`)
-      .then((res) => res.text())
-      .then((code) =>
-        mermaid.render(`chart-${crypto.randomUUID()}`, withClassDefs(code)),
-      )
+    if (!code) return;
+    mermaid
+      .render(`chart-${crypto.randomUUID()}`, withClassDefs(code))
       .then((result) => setSvg(result.svg));
-  }, [filename]);
+  }, [code]);
 
   return (
     <FreeZoom initialScale={0.8}>
@@ -49,18 +56,9 @@ function ChartView({ filename }: { filename: string }) {
 }
 
 function App() {
-  const [dirName, setDirName] = useState("");
-  const [filenames, setFilenames] = useState<string[]>([]);
+  const { dirHandle, dirName, filenames, connected, connect } =
+    useLocalCharts();
   const [selected, setSelected] = useState<string | null>(currentHashFilename);
-
-  useEffect(() => {
-    fetch("/api/charts")
-      .then((res) => res.json())
-      .then((data) => {
-        setDirName(data.dirName);
-        setFilenames(data.files);
-      });
-  }, []);
 
   useEffect(() => {
     const onHashChange = () => setSelected(currentHashFilename());
@@ -72,6 +70,38 @@ function App() {
     if (dirName) document.title = dirName;
   }, [dirName]);
 
+  function handleConnect() {
+    // A leftover hash from a previous session shouldn't jump straight into
+    // a chart the moment a folder connects — always land on the list.
+    connect()
+      .then(() => {
+        window.location.hash = "";
+      })
+      .catch(() => {});
+  }
+
+  if (!connected) {
+    return (
+      <main
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+        }}
+      >
+        {!("showDirectoryPicker" in window) ? (
+          <p>
+            This browser doesn't support the File System Access API. Try
+            Chrome or Edge.
+          </p>
+        ) : (
+          <button onClick={handleConnect}>Connect charts folder</button>
+        )}
+      </main>
+    );
+  }
+
   if (selected) {
     return (
       <main>
@@ -81,7 +111,7 @@ function App() {
         >
           &larr; Back
         </a>
-        <ChartView key={selected} filename={selected} />
+        <ChartView key={selected} dirHandle={dirHandle!} filename={selected} />
       </main>
     );
   }
