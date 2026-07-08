@@ -7,9 +7,35 @@ function chartsApiPlugin(chartsDir: string): Plugin {
   return {
     name: 'charts-api',
     configureServer(server) {
-      server.middlewares.use('/api/charts/test.mmd', (_req, res) => {
-        const filePath = path.join(chartsDir, 'test.mmd')
-        fs.readFile(filePath, 'utf-8', (err, data) => {
+      server.middlewares.use('/api/charts', (req, res) => {
+        const url = new URL(req.url ?? '/', 'http://localhost')
+        const filename = decodeURIComponent(url.pathname).replace(/^\/+/, '')
+
+        if (filename === '') {
+          fs.readdir(chartsDir, (err, files) => {
+            if (err) {
+              res.statusCode = 500
+              res.end('Failed to read charts directory')
+              return
+            }
+            res.setHeader('Content-Type', 'application/json')
+            res.end(
+              JSON.stringify({
+                dirName: path.basename(chartsDir),
+                files: files.filter((f) => f.endsWith('.mmd')).sort(),
+              }),
+            )
+          })
+          return
+        }
+
+        if (filename.includes('/') || filename.includes('..') || !filename.endsWith('.mmd')) {
+          res.statusCode = 400
+          res.end('Invalid filename')
+          return
+        }
+
+        fs.readFile(path.join(chartsDir, filename), 'utf-8', (err, data) => {
           if (err) {
             res.statusCode = 404
             res.end('Not found')
