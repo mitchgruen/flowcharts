@@ -1,4 +1,19 @@
+import { useEffect, useRef } from 'react'
+import mermaid from 'mermaid'
+import testChart from './test.mmd?raw'
+
+mermaid.initialize({ startOnLoad: false, theme: 'default' })
+
 function App() {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const id = `chart-${crypto.randomUUID()}`
+    mermaid.render(id, testChart).then(({ svg }) => {
+      if (ref.current) ref.current.innerHTML = svg
+    })
+  }, [])
+
   return (
     <main
       style={{
@@ -8,7 +23,7 @@ function App() {
         height: '100vh',
       }}
     >
-      <h1>Flowcharts</h1>
+      <div ref={ref} />
     </main>
   )
 }
