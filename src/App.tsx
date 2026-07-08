@@ -50,7 +50,10 @@ function ChartView({
 
   return (
     <FreeZoom initialScale={0.8}>
-      <div dangerouslySetInnerHTML={{ __html: svg }} />
+      <div
+        style={{ width: "100%", height: "100%" }}
+        dangerouslySetInnerHTML={{ __html: svg }}
+      />
     </FreeZoom>
   );
 }
