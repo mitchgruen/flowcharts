@@ -44,6 +44,10 @@ function App() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
+  useEffect(() => {
+    if (dirName) document.title = dirName;
+  }, [dirName]);
+
   if (selected) {
     return (
       <main
